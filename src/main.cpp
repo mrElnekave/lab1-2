@@ -78,6 +78,20 @@ void stop_if_serial() {
     }
 }
 
+void sanitize_all(float &m0_current,
+                  float &m1_current,
+                  float &m2_current,
+                  float m0_pos,
+                  float m0_vel,
+                  float m1_pos,
+                  float m1_vel,
+                  float m2_pos,
+                  float m2_vel) {
+    sanitize_current_command(m0_current, m0_pos, m0_vel);
+    sanitize_current_command(m1_current, m1_pos, m1_vel);
+    sanitize_current_command(m2_current, m2_pos, m2_vel);
+}
+
 void loop() {
     teensy_bus.PollCAN();  // Check for messages from the motors.
 
@@ -163,5 +177,26 @@ void loop() {
         float middle_motor_vel2 = teensy_bus.Get(5).Velocity();
         float top_motor2 = teensy_bus.Get(6).Position();
         float top_motor_vel2 = teensy_bus.Get(6).Velocity();
+
+        float delta_time = millis() / 1000.0;
+        float target_position = 2 * sin(delta_time);
+
+        float Kp = 1000;
+        float Kd = 100;
+
+        float bottom_motor_current = pd_control(bottom_motor, bottom_motor_vel, target_position, Kp, Kd);
+        float middle_motor_current = 0;  // pd_control(middle_motor, middle_motor_vel, target_position, Kp, Kd);
+        float top_motor_current = 0;     // pd_control(top_motor, top_motor_vel, target_position, Kp, Kd);
+
+        // sanitize
+        sanitize_all(bottom_motor_current, middle_motor_current, top_motor_current, bottom_motor, bottom_motor_vel,
+                     middle_motor, middle_motor_vel, top_motor, top_motor_vel);
+
+        // now send the current to the motor
+        teensy_bus.CommandTorques(bottom_motor_current, 0, 0, 0, C610Subbus::kIDZeroToThree);
+
+        // timing
+        last_command = now;
+        Serial.println();
     }
 }
