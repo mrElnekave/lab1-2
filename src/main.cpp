@@ -19,7 +19,7 @@ float pd_control(float pos,
     // pos is 0-pi
     // target is 0-pi
     float tau = Kp * (target - pos) + Kd * (-vel);
-    Serial.printf("\ntau: %f\n", tau);
+    // Serial.printf("\ntau: %f\n", tau);
     return tau;
 }
 
@@ -178,22 +178,29 @@ void loop() {
         float top_motor2 = teensy_bus.Get(6).Position();
         float top_motor_vel2 = teensy_bus.Get(6).Velocity();
 
-        float delta_time = millis() / 1000.0;
-        float target_position = 2 * sin(delta_time);
+        float time = millis() / 1000.0;
+        float target_position = (float)(3.0 / 2.0) * sin(time);
+        Serial.printf("target_position: %f, time: %f\n", target_position, time);
 
         float Kp = 1000;
-        float Kd = 100;
+        float Kd = 200;
 
         float bottom_motor_current = pd_control(bottom_motor, bottom_motor_vel, target_position, Kp, Kd);
-        float middle_motor_current = 0;  // pd_control(middle_motor, middle_motor_vel, target_position, Kp, Kd);
-        float top_motor_current = 0;     // pd_control(top_motor, top_motor_vel, target_position, Kp, Kd);
+        float middle_motor_current = pd_control(middle_motor, middle_motor_vel, target_position / 2.0, Kp, Kd);
+        float top_motor_current = pd_control(top_motor, top_motor_vel, target_position / 2.0, Kp, Kd);
 
         // sanitize
         sanitize_all(bottom_motor_current, middle_motor_current, top_motor_current, bottom_motor, bottom_motor_vel,
                      middle_motor, middle_motor_vel, top_motor, top_motor_vel);
 
         // now send the current to the motor
-        teensy_bus.CommandTorques(bottom_motor_current, 0, 0, 0, C610Subbus::kIDZeroToThree);
+        teensy_bus.CommandTorques(bottom_motor_current, middle_motor_current, top_motor_current, 0, C610Subbus::kIDZeroToThree);
+        // teensy_bus.CommandTorques(500, 0, 0, 0, C610Subbus::kIDFourToSeven);
+
+        // print all motor 1 positions
+        Serial.printf("bottom motor 1 position: %f\n", bottom_motor);
+        Serial.printf("middle motor 1 position: %f\n", middle_motor);
+        Serial.printf("top motor 1 position: %f\n", top_motor);
 
         // timing
         last_command = now;
