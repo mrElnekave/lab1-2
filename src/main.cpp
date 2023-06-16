@@ -99,69 +99,6 @@ void loop() {
 
     stop_if_serial();
 
-    /*
-        if (now - last_command >= LOOP_DELAY_MILLIS) {
-            float m0_pos = teensy_bus.Get(0).Position();  // Get the shaft position of motor 0 in radians.
-            float m0_vel = teensy_bus.Get(0).Velocity();  // Get the shaft velocity of motor 0 in radians/sec.
-            Serial.print("m0_pos: ");
-            Serial.print(m0_pos);
-            Serial.print("\tm0_vel: ");
-            Serial.print(m0_vel);
-
-            float m0_current = 0.0;
-            float m1_current = 0.0;
-            float m2_current = 0.0;
-
-            // Step 8. Change the target position to something periodic
-            float time = millis() / 1000.0;  // millis() returns the time in milliseconds since start of program
-
-            // Step 5. Your PD controller is run here.
-            float Kp = 1000;                        // steer strength
-            float Kd = 100;                         // resistance to turning
-            float target_position = 2 * sin(time);  // modify in step 8
-            m0_current = pd_control(m0_pos, m0_vel, target_position, Kp, Kd);
-
-            // Step 4. Uncomment for bang-bang control. Comment out again before Step 5.
-            // if (m0_pos < 0) {
-            //     m0_current = 800;
-            // } else {
-            //     m0_current = -800;
-            // }
-
-            // Step 10. Program periodic motion for all three motors.
-
-            // Step 9. Program PID control for the two other motors.
-            float m1_pos = teensy_bus.Get(1).Position();
-            float m1_vel = teensy_bus.Get(1).Velocity();
-            float m2_pos = teensy_bus.Get(2).Position();
-            float m2_vel = teensy_bus.Get(2).Velocity();
-            Serial.print("\tm1_pos: ");
-            Serial.print(m1_pos);
-            Serial.print("\tm1_vel: ");
-            Serial.print(m1_vel);
-            Serial.print("\tm2_pos: ");
-            Serial.print(m2_pos);
-            Serial.print("\tm2_vel: ");
-            Serial.print(m2_vel);
-            // m1_current = YOUR PID CODE
-            // m2_current = YOUR PID CODE
-
-            // Sanitizes your computed current commands to make the robot safer.
-            sanitize_current_command(m0_current, m0_pos, m0_vel);
-            sanitize_current_command(m1_current, m1_pos, m1_vel);
-            sanitize_current_command(m2_current, m2_pos, m2_vel);
-            // Only call CommandTorques once per loop! Calling it multiple times will override the last command.
-            // This actually gives the currents to the motors.
-
-            teensy_bus.CommandTorques(m0_current, m1_current, m2_current, 0, C610Subbus::kIDZeroToThree);
-            // Once you motors with ID=4 to 7, use this command
-            // bus.CommandTorques(0, 0, 0, 0, C610Subbus::kIDFourToSeven);
-
-            last_command = now;
-            Serial.println();
-        }
-
-    */
     if (now - last_command >= LOOP_DELAY_MILLIS) {
         float bottom_motor = teensy_bus.Get(0).Position();
         float bottom_motor_vel = teensy_bus.Get(0).Velocity();
